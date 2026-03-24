@@ -5,7 +5,7 @@ jobs:
   run-proxy:
     runs-on: ubuntu-latest
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # This addresses the warning
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -13,8 +13,7 @@ jobs:
           node-version: '24'
       - name: Build and Launch
         run: |
-          cd replit_runtime
           npm install
           npx tsc || true
-          echo "--- PROXY ATTEMPTING TO CONNECT TO ATERNOS ---"
+          echo "--- STARTING PROXY ---"
           node build/index.js
