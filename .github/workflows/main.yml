@@ -11,15 +11,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Debug and Install
-        run: |
-          echo "--- Checking File Structure ---"
-          ls -R
-          echo "--- Installing Dependencies ---"
-          npm install
       - name: Build and Launch
         run: |
-          echo "--- Building TypeScript ---"
-          npx tsc || echo "Build had warnings, ignoring..."
-          echo "--- Starting Proxy Now ---"
+          npm install
+          npx tsc || true
+          echo "Waiting 5 seconds for Aternos..."
+          sleep 5
           node build/index.js
+
