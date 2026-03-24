@@ -11,16 +11,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Install & Build
+      - name: Build and Launch from Folder
         run: |
+          cd replit_runtime # This moves GitHub into your folder
           npm install
           npx tsc || true
-      - name: Start ngrok & Proxy
-        env:
-          NGROK_AUTH: ${{ secrets.NGROK_AUTHTOKEN }}
-        run: |
-          npm install -g ngrok
-          ngrok config add-authtoken $NGROK_AUTH
-          # Starts a tunnel to the proxy's local port
-          ngrok http 8080 --log=stdout & 
+          echo "--- PROXY STARTING NOW ---"
           node build/index.js
