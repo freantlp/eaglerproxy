@@ -1,17 +1,19 @@
 name: Run EaglerProxy
 on: 
-  workflow_dispatch: # Allows you to start it manually
+  workflow_dispatch: 
   schedule:
-    - cron: '0 */4 * * *' # Restarts every 4 hours to avoid timeouts
+    - cron: '0 */4 * * *'
 
 jobs:
   run-proxy:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # This fixes your warning
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24' # Updated version
       - name: Install and Build
         run: |
           npm install
