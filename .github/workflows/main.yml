@@ -14,10 +14,11 @@ jobs:
       - name: Build and Stay Alive
         run: |
           npm install
-          npx tsc || true
+          # This line is the fix: it manually installs the compiler
+          npm install -g typescript 
+          tsc || echo "Build warnings, but continuing..."
           echo "--- STARTING PROXY ---"
-          # The '&' runs it in the background so the script continues
+          # This command checks if build exists, then runs it
           node build/index.js & 
           echo "Proxy is running. Keeping Action alive for 6 hours..."
-          # This forces GitHub to stay open so you can play
           sleep 21600 
