@@ -11,14 +11,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Install
-        run: npm install && npx tsc || true
+      - name: Install & Build
+        run: |
+          npm install
+          npx tsc || true
       - name: Start ngrok & Proxy
         env:
           NGROK_AUTH: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
           npm install -g ngrok
           ngrok config add-authtoken $NGROK_AUTH
-          # Starts ngrok on the proxy port (usually 8080 or 1111)
+          # Starts a tunnel to the proxy's local port
           ngrok http 8080 --log=stdout & 
           node build/index.js
