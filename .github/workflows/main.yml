@@ -1,4 +1,4 @@
-name: Run EaglerProxy
+    name: Run EaglerProxy
 on: [workflow_dispatch]
 
 jobs:
@@ -16,11 +16,19 @@ jobs:
           NGROK_AUTH: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
           npm install
-          npx tsc || true
-          # Install and start ngrok to create your public link
+          npx tsc || echo "Build warnings ignored"
+          
+          # Install and configure ngrok
           npm install -g ngrok
           ngrok config add-authtoken $NGROK_AUTH
+          
+          # Start ngrok on port 8080 (Matches the proxy port)
           ngrok http 8080 --log=stdout & 
-          echo "--- STARTING PROXY ---"
-          node build/index.js &
-          sleep 21600 # Keeps the action alive for 6 hours
+          
+          echo "--- STARTING PROXY ON PORT 8080 ---"
+          # Force the proxy to use port 8080
+          PORT=8080 node build/index.js &
+          
+          # Keep the action running for 6 hours
+          echo "Proxy is live. Keeping Action alive..."
+          sleep 21600
