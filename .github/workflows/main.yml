@@ -1,21 +1,24 @@
 name: Run EaglerProxy
-on: 
-  workflow_dispatch: 
+on: [workflow_dispatch]
 
 jobs:
   run-proxy:
     runs-on: ubuntu-latest
-    # This line tells GitHub to use Node 24 for everything
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4.1.7 # Updated version
-      - uses: actions/setup-node@v4.0.3 # Updated version
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Install and Build
+      - name: Install
+        run: npm install && npx tsc || true
+      - name: Start ngrok & Proxy
+        env:
+          NGROK_AUTH: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
-          npm install
-          npx tsc || true
-      - name: Start Proxy
-        run: node build/index.js
+          npm install -g ngrok
+          ngrok config add-authtoken $NGROK_AUTH
+          # Starts ngrok on the proxy port (usually 8080 or 1111)
+          ngrok http 8080 --log=stdout & 
+          node build/index.js
