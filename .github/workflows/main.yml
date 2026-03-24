@@ -1,4 +1,4 @@
-  name: Run EaglerProxy
+ name: Run EaglerProxy
 on: [workflow_dispatch]
 
 jobs:
