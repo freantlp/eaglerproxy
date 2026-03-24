@@ -45,10 +45,11 @@ export const config: Config = {
       originWhitelist: null,
       originBlacklist: null,
     },
-    server: {
-      host: "FangsAternos.aternos.me",
-      port: 41859,
-    },
+     server: {
+    host: "FangsAternos.aternos.me", // NO :PORT HERE
+    port: 41859,                    // ONLY THE PORT NUMBERS
+  },
+
     tls: undefined,
   },
 };
