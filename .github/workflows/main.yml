@@ -11,13 +11,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Install and Build
+      - name: Debug and Install
         run: |
+          echo "--- Checking File Structure ---"
+          ls -R
+          echo "--- Installing Dependencies ---"
           npm install
-          # This creates the missing 'build' folder
-          npx tsc || echo "Warnings ignored"
-      - name: Start Proxy
+      - name: Build and Launch
         run: |
-          echo "--- LAUNCHING PROXY ---"
-          # This command starts the proxy from the build folder
+          echo "--- Building TypeScript ---"
+          npx tsc || echo "Build had warnings, ignoring..."
+          echo "--- Starting Proxy Now ---"
           node build/index.js
