@@ -1,19 +1,16 @@
 name: Run EaglerProxy
 on: 
   workflow_dispatch: 
-  schedule:
-    - cron: '0 */4 * * *'
-
 jobs:
   run-proxy:
     runs-on: ubuntu-latest
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # This makes the warning go away
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # This kills the warning
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '24' # Using the newer version they want
+          node-version: '24' # Moves you to the version GitHub wants
       - name: Install and Build
         run: |
           npm install
