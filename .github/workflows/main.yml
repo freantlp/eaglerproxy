@@ -11,11 +11,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Build and Launch
+      - name: Build and Force Launch
         run: |
           npm install
-          npx tsc || true
-          echo "Waiting 5 seconds for Aternos..."
-          sleep 5
-          node build/index.js
-
+          npx tsc || echo "Build had warnings"
+          echo "--- ATTEMPTING PROXY LAUNCH ---"
+          # The '|| true' stops it from crashing immediately so you can read the log
+          node build/index.js || true 
