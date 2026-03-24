@@ -11,9 +11,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Build and Launch
+      - name: Install and Build
         run: |
           npm install
-          npx tsc || true
-          echo "--- STARTING PROXY ---"
+          # This creates the missing 'build' folder
+          npx tsc || echo "Warnings ignored"
+      - name: Start Proxy
+        run: |
+          echo "--- LAUNCHING PROXY ---"
+          # This command starts the proxy from the build folder
           node build/index.js
