@@ -11,14 +11,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Build and Stay Alive
+      - name: Build and Launch
+        env:
+          NGROK_AUTH: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
           npm install
-          # This line is the fix: it manually installs the compiler
-          npm install -g typescript 
-          tsc || echo "Build warnings, but continuing..."
+          npx tsc || true
+          # Install and start ngrok to create your public link
+          npm install -g ngrok
+          ngrok config add-authtoken $NGROK_AUTH
+          ngrok http 8080 --log=stdout & 
           echo "--- STARTING PROXY ---"
-          # This command checks if build exists, then runs it
-          node build/index.js & 
-          echo "Proxy is running. Keeping Action alive for 6 hours..."
-          sleep 21600 
+          node build/index.js &
+          sleep 21600 # Keeps the action alive for 6 hours
