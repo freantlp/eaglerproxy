@@ -11,10 +11,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Build and Force Launch
+      - name: Build and Stay Alive
         run: |
           npm install
-          npx tsc || echo "Build had warnings"
-          echo "--- ATTEMPTING PROXY LAUNCH ---"
-          # The '|| true' stops it from crashing immediately so you can read the log
-          node build/index.js || true 
+          npx tsc || true
+          echo "--- STARTING PROXY ---"
+          # The '&' runs it in the background so the script continues
+          node build/index.js & 
+          echo "Proxy is running. Keeping Action alive for 6 hours..."
+          # This forces GitHub to stay open so you can play
+          sleep 21600 
