@@ -5,16 +5,16 @@ jobs:
   run-proxy:
     runs-on: ubuntu-latest
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # This addresses the warning
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Build and Launch from Folder
+      - name: Build and Launch
         run: |
-          cd replit_runtime # This moves GitHub into your folder
+          cd replit_runtime
           npm install
           npx tsc || true
-          echo "--- PROXY STARTING NOW ---"
+          echo "--- PROXY ATTEMPTING TO CONNECT TO ATERNOS ---"
           node build/index.js
