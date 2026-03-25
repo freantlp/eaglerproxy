@@ -5,8 +5,6 @@ on:
 jobs:
   run-proxy:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,40 +13,51 @@ jobs:
           
       - name: Build and Launch
         env:
+          # This maps your GitHub Secret to an environment variable
           NGROK_AUTH: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
           echo "--- Installing & Building ---"
           npm install
-          npx tsc || echo "Build warnings ignored"
+          npx tsc || echo "TSC warnings ignored"
           
-          echo "--- Starting EaglerProxy on Port 8080 ---"
-          # Set the PORT env var so your proxy knows where to listen
-          PORT=8080 node build/index.js &
+          echo "--- Debug: Listing Files ---"
+          ls -R build || echo "Build folder not found!"
+          
+          echo "--- Starting EaglerProxy ---"
+          # Try both common start paths for EaglerProxy
+          PORT=8080 node build/index.js > proxy.log 2>&1 || PORT=8080 node index.js > proxy.log 2>&1 &
+          
+          echo "--- Authenticating ngrok ---"
+          # This command uses the secret you added to GitHub
+          npx ngrok config add-authtoken "$NGROK_AUTH"
           
           echo "--- Verifying Proxy Health ---"
-          # This loop waits until port 8080 is actually open
-          for i in {1..20}; do
+          for i in {1..15}; do
             if nc -z 127.0.0.1 8080; then
-              echo "✅ Proxy is listening on port 8080!"
+              echo "✅ Proxy is listening on 8080!"
               break
             fi
-            echo "Waiting for proxy to start..."
-            sleep 3
+            echo "Waiting for proxy... (Attempt $i/15)"
+            tail -n 2 proxy.log
+            sleep 4
           done
           
-          echo "--- Starting ngrok Tunnel ---"
-          # Explicitly target 127.0.0.1:8080 to stop the 'undefined' error
-          # Using --log=stdout helps you debug if it fails
-          # --host-header=rewrite helps with Eaglercraft websocket handshakes
-          nohup npx ngrok http 127.0.0.1:8080 --host-header=rewrite --log=stdout & 
+          echo "--- Starting ngrok ---"
+          # 127.0.0.1:8080 fixes the 'undefined' error from your screenshot
+          nohup npx ngrok http 127.0.0.1:8080 --host-header=rewrite > ngrok.log 2>&1 &
           
-          echo "--- Fetching Your Public URL ---"
-          sleep 10
-          # This pulls the public URL from the ngrok API and prints it to logs
-          PUBLIC_URL=$(curl --silent http://127.0.0.1 | jq -r '.tunnels[0].public_url')
-          echo "------------------------------------------------"
-          echo "🚀 PROXY IS LIVE AT: $PUBLIC_URL"
-          echo "------------------------------------------------"
+          echo "--- Fetching Your URL ---"
+          sleep 8
+          URL=$(curl --silent http://127.0.0.1 | jq -r '.tunnels[0].public_url')
           
-          # Keeps the Action running for 6 hours
+          if [ "$URL" = "null" ] || [ -z "$URL" ]; then
+            echo "❌ ngrok failed. Check your Secret or logs:"
+            cat ngrok.log
+          else
+            echo "------------------------------------------------"
+            echo "🚀 SERVER LIVE AT: $URL"
+            echo "Eaglercraft Join: wss://${URL#*//}"
+            echo "------------------------------------------------"
+          fi
+          
           sleep 21600
