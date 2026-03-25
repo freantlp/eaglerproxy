@@ -16,24 +16,21 @@ jobs:
         env:
           NGROK_AUTH: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
-          echo "--- Installing Dependencies ---"
           npm install
-          
-          echo "--- Building TypeScript ---"
           npx tsc || echo "Build warnings ignored"
-          
-          echo "--- Starting Proxy on Port 8080 ---"
-          PORT=8080 node build/index.js &
-          
-          echo "Waiting 15 seconds for Proxy to initialize..."
-          sleep 15
-          
-          echo "--- Starting ngrok Tunnel ---"
           npm install -g ngrok
           ngrok config add-authtoken $NGROK_AUTH
-          # Tunnel to port 8080 where the proxy is listening
+          
+          # Start the Proxy FIRST
+          echo "--- STARTING PROXY ---"
+          PORT=8080 node build/index.js &
+          
+          # Wait for the proxy to start before ngrok looks for it
+          sleep 15
+          
+          # Start ngrok on port 8080
+          echo "--- STARTING NGROK TUNNEL ---"
           ngrok http 8080 --log=stdout & 
           
-          echo "--- PROXY IS LIVE ---"
-          # Keeps the action running for 6 hours
+          # Keep the action alive for 6 hours
           sleep 21600
