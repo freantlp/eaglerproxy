@@ -16,21 +16,26 @@ jobs:
         env:
           NGROK_AUTH: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
+          echo "--- Installing Dependencies ---"
           npm install
-          npx tsc || echo "Build warnings ignored"
-          npm install -g ngrok
-          ngrok config add-authtoken $NGROK_AUTH
           
-          # Start the Proxy FIRST
-          echo "--- STARTING PROXY ---"
+          echo "--- Building TypeScript ---"
+          npx tsc || echo "Build warnings ignored"
+          
+          echo "--- Starting Proxy on Port 8080 ---"
+          # This forces the proxy to use the correct port
           PORT=8080 node build/index.js &
           
-          # Wait for the proxy to start before ngrok looks for it
-          sleep 15
+          echo "Waiting 30 seconds for Proxy to initialize..."
+          # This longer delay fixes the 'connection refused' error
+          sleep 30
           
-          # Start ngrok on port 8080
-          echo "--- STARTING NGROK TUNNEL ---"
+          echo "--- Starting ngrok Tunnel ---"
+          npm install -g ngrok
+          ngrok config add-authtoken $NGROK_AUTH
+          # Tunnel to port 8080 where the proxy is listening
           ngrok http 8080 --log=stdout & 
           
-          # Keep the action alive for 6 hours
+          echo "--- PROXY IS LIVE ---"
+          # Keeps the action running for 6 hours
           sleep 21600
