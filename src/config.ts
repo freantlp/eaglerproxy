@@ -47,7 +47,7 @@ export const config: Config = {
     },
      server: {
     host: "FangsAternos.aternos.me", // NO :PORT HERE
-    port: 41859,                    // ONLY THE PORT NUMBERS
+    port: 8080,                    // ONLY THE PORT NUMBERS
   },
 
     tls: undefined,
