@@ -1,4 +1,4 @@
-name: Run EaglerProxy
+ name: Run EaglerProxy
 on:
   workflow_dispatch:
 
@@ -12,30 +12,43 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          
       - name: Build and Launch
         env:
           NGROK_AUTH: ${{ secrets.NGROK_AUTHTOKEN }}
         run: |
-          echo "--- Installing Dependencies ---"
+          echo "--- Installing & Building ---"
           npm install
-          
-          echo "--- Building TypeScript ---"
           npx tsc || echo "Build warnings ignored"
           
-          echo "--- Starting Proxy on Port 8080 ---"
-          # This forces the proxy to use the correct port
+          echo "--- Starting EaglerProxy on Port 8080 ---"
+          # Set the PORT env var so your proxy knows where to listen
           PORT=8080 node build/index.js &
           
-          echo "Waiting 30 seconds for Proxy to initialize..."
-          # This longer delay fixes the 'connection refused' error
-          sleep 30
+          echo "--- Verifying Proxy Health ---"
+          # This loop waits until port 8080 is actually open
+          for i in {1..20}; do
+            if nc -z 127.0.0.1 8080; then
+              echo "✅ Proxy is listening on port 8080!"
+              break
+            fi
+            echo "Waiting for proxy to start..."
+            sleep 3
+          done
           
           echo "--- Starting ngrok Tunnel ---"
-          npm install -g ngrok
-          ngrok config add-authtoken $NGROK_AUTH
-          # Tunnel to port 8080 where the proxy is listening
-          ngrok http 8080 --log=stdout & 
+          # Explicitly target 127.0.0.1:8080 to stop the 'undefined' error
+          # Using --log=stdout helps you debug if it fails
+          # --host-header=rewrite helps with Eaglercraft websocket handshakes
+          nohup npx ngrok http 127.0.0.1:8080 --host-header=rewrite --log=stdout & 
           
-          echo "--- PROXY IS LIVE ---"
-          # Keeps the action running for 6 hours
+          echo "--- Fetching Your Public URL ---"
+          sleep 10
+          # This pulls the public URL from the ngrok API and prints it to logs
+          PUBLIC_URL=$(curl --silent http://127.0.0.1 | jq -r '.tunnels[0].public_url')
+          echo "------------------------------------------------"
+          echo "🚀 PROXY IS LIVE AT: $PUBLIC_URL"
+          echo "------------------------------------------------"
+          
+          # Keeps the Action running for 6 hours
           sleep 21600
